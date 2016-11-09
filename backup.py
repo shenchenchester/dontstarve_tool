@@ -86,7 +86,7 @@ def loop():
 def get_backups():
     if not os.path.exists(BACKUP_DIR):
         return []
-    return sorted(os.listdir(BACKUP_DIR))
+    return list(sorted(os.listdir(BACKUP_DIR)))
 
 def restore(b):
     d = BACKUP_DIR +'/' + b
@@ -105,7 +105,14 @@ def menu():
     if n=='1' or n == '':
         loop()
     elif n=='2':
-        backups = list(reversed(get_backups()))
+        print(0, 'current')
+        save_path = os.path.join(SAVE_DIR, 'client_save')
+        session = sr.load_saveindex(save_path, use_cache=False)
+        if session:
+            print(' ', session['summary']['title'])
+        else:
+            print('not available')
+        backups = get_backups()
         for i, d in enumerate(backups):
             print(i+1, d)
             save_path = os.path.join(BACKUP_DIR, d, 'client_save')
@@ -118,6 +125,9 @@ def menu():
         print(k, len(backups))
         to_restore = 0
         try:
+            if int(k)==0:
+                print('keep current')
+                return
             to_restore = backups[int(k)-1]
         except:
             print('invalid input!')
