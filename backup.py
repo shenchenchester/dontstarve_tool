@@ -7,7 +7,6 @@ import stat
 import save_reader as sr
 import json
 
-# SAVE_DIR = 'C:/Users/ld/Documents/Klei/DoNotStarveTogether'
 SAVE_DIR = '/Users/chester/Documents/Klei/DoNotStarveTogether'
 BACKUP_DIR = '/Users/chester/Documents/Klei/backups'
 INTERVAL = 8*60 # seconds

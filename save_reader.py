@@ -3,10 +3,6 @@ import zlib
 from slpp import slpp as lua
 import os
 import json
-# root = '/Users/chester/Documents/Klei/DoNotStarveTogether/client_save'
-# root = '/Volumes/NO NAME/helper/save/161106_180518/client_save'
-# lua_exp = decompressed[7:]
-# data = lua.decode(lua_exp)
 
 def load_saveindex(root, use_cache=False):
     current = None
@@ -158,10 +154,3 @@ def summary_for_session(world, users):
         'days':clock['cycles'],
         'title': line
     }
-
-# decode(root+'/client_save/player_history')
-# decode(root+'/client_save/morgue')
-# decode(root+'/profile')
-
-# root = '/Users/chester/Documents/Klei/DoNotStarveTogether/client_save'
-# current = load_saveindex(root)
