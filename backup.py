@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import shutil
 from datetime import datetime
@@ -10,6 +11,12 @@ import json
 SAVE_DIR = '/Users/chester/Documents/Klei/DoNotStarveTogether'
 BACKUP_DIR = '/Users/chester/Documents/Klei/backups'
 INTERVAL = 8*60 # seconds
+MAX_BACKUPS = 10
+
+try:
+    input = raw_input
+except NameError:
+    pass
 
 def copytree(src, dst, symlinks = False, ignore = None):
     if not os.path.exists(dst):
@@ -40,7 +47,7 @@ def copytree(src, dst, symlinks = False, ignore = None):
 def remove(d):
     if os.path.exists(d):
         shutil.rmtree(d)
-        print 'removed', d
+        print('removed', d)
 
 def backup(dst=None, trunc=True):
     if not dst:
@@ -49,20 +56,20 @@ def backup(dst=None, trunc=True):
         dst = BACKUP_DIR + '/' + dirname
 
     copytree(SAVE_DIR, dst)
-    print 'backup to', dst
+    print('backup to', dst)
 
     # remove old backups
     if trunc:
         backups = get_backups()
-        print backups
-        if len(backups) > 10:
-            to_remove = backups[:len(backups) - 10]
+        print(backups)
+        if len(backups) > MAX_BACKUPS:
+            to_remove = backups[:len(backups) - MAX_BACKUPS]
             for b in to_remove:
                 d = BACKUP_DIR +'/' + b
                 remove(d)
 
 def loop():
-    print 'running backup'
+    print('running backup')
     lasttime = time.time()
     while True:
         time.sleep(INTERVAL)
@@ -75,7 +82,7 @@ def loop():
             backup(dst)
             lasttime = session['time']
         else:
-            print 'save not updated, skip backup'
+            print('save not updated, skip backup')
 
 def get_backups():
     if not os.path.exists(BACKUP_DIR):
@@ -89,40 +96,42 @@ def restore(b):
     backup(dst=tmp, trunc=False)
     shutil.rmtree(SAVE_DIR)
     copytree(d, SAVE_DIR)
-    print 'restore', d
+    print('restore', d)
 
 def menu():
-    print '1. start backup every {:.1f} minutes\n\
+    print('1. start backup every {:.1f} minutes\n\
 2. restore a previous backup\n\
-3. exit'.format(INTERVAL/60.0)
-    n = raw_input('input number(1 by default):')
+3. exit'.format(INTERVAL/60.0))
+    n = input('input number(1 by default):')
     if n=='1' or n == '':
         loop()
     elif n=='2':
         backups = list(reversed(get_backups()))
         for i, d in enumerate(backups):
-            print i+1, d
+            print(i+1, d)
             save_path = os.path.join(BACKUP_DIR, d, 'client_save')
             session = sr.load_saveindex(save_path, use_cache=True)
-            print ' ', session['summary']['title']
-        k = raw_input('input number:')
+            if session:
+                print(' ', session['summary']['title'])
+            else:
+                print('not available')
+        k = input('input number:')
         print(k, len(backups))
         to_restore = 0
         try:
             to_restore = backups[int(k)-1]
         except:
-            print 'invalid input!'
+            print('invalid input!')
             return
         restore(to_restore)
     elif n=='3':
         return
     else:
-        print n
-        print 'invalid input!'
+        print('invalid input!')
 
 def main():
     menu()
-    print 'exit'
+    print('exit')
     time.sleep(0.5)
 
 main()

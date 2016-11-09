@@ -17,17 +17,18 @@ def load_saveindex(root, use_cache=False):
 
     s = read_file(root+'/saveindex')
     data = lua.decode(s[18:])
-    for slot in data['slots']:
-        if slot.get('session_id'):
-            session_dir = os.path.join(root, 'session', slot['session_id'])
-            tmp = load_session(session_dir)
-            if tmp:
-                ot = tmp['summary']['title']
-                tmp['summary']['title'] = '{}\t{}'.format(ot, slot['server']['name'])
-                if not current:
-                    current = tmp
-                elif current['time']<tmp['time']:
-                    current = tmp
+    if data:
+        for slot in data['slots']:
+            if slot.get('session_id'):
+                session_dir = os.path.join(root, 'session', slot['session_id'])
+                tmp = load_session(session_dir)
+                if tmp:
+                    ot = tmp['summary']['title']
+                    tmp['summary']['title'] = '{}\t{}'.format(ot, slot['server']['name'])
+                    if not current:
+                        current = tmp
+                    elif current['time']<tmp['time']:
+                        current = tmp
     dump_cache(current, root)
     return current
 
@@ -164,4 +165,3 @@ def summary_for_session(world, users):
 
 # root = '/Users/chester/Documents/Klei/DoNotStarveTogether/client_save'
 # current = load_saveindex(root)
-# print current['summary']['title']

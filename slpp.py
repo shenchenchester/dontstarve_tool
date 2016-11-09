@@ -76,7 +76,7 @@ class SLPP(object):
                     else:
                         contents.append(dp + '%s = %s' % (k, self.__encode(v)))
                 s += (',%s' % newline).join(contents)
-                
+
             else:
                 s += (',%s' % newline).join(
                     [dp + self.__encode(el) for el in obj])
