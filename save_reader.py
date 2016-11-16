@@ -3,6 +3,7 @@ import zlib
 from slpp import slpp as lua
 import os
 import json
+import time
 
 def load_saveindex(root, use_cache=False):
     current = None
@@ -14,17 +15,18 @@ def load_saveindex(root, use_cache=False):
     s = read_file(root+'/saveindex')
     data = lua.decode(s[18:])
     if data:
-        for slot in data['slots']:
-            if slot.get('session_id'):
-                session_dir = os.path.join(root, 'session', slot['session_id'])
-                tmp = load_session(session_dir)
-                if tmp:
-                    ot = tmp['summary']['title']
-                    tmp['summary']['title'] = '{}\t{}'.format(ot, slot['server']['name'])
-                    if not current:
-                        current = tmp
-                    elif current['time']<tmp['time']:
-                        current = tmp
+        index = data['last_used_slot'] - 1
+        slot = data['slots'][index]
+        if slot.get('session_id'):
+            session_dir = os.path.join(root, 'session', slot['session_id'])
+            tmp = load_session(session_dir)
+            if tmp:
+                ot = tmp['summary']['title']
+                tmp['summary']['title'] = '{}\t{}'.format(ot, slot['server']['name'])
+                if not current:
+                    current = tmp
+                elif current['time']<tmp['time']:
+                    current = tmp
     dump_cache(current, root)
     return current
 
@@ -45,17 +47,23 @@ def load_session(session_dir):
     files.sort()
     if len(files) == 0:
         return
-    ws_path = os.path.join(session_dir, files[-1])
+    return load_snapshot(session_dir, files[-1], dirs)
+
+def load_snapshot(session_dir, snapshot, user_dirs=None):
+    if not os.path.exists(session_dir):
+        return
+    if not user_dirs:
+        user_dirs = []
+        for f in os.listdir(session_dir):
+            if not os.path.isfile(os.path.join(session_dir, f)):
+                user_dirs.append(f)
+    ws_path = os.path.join(session_dir, snapshot)
     world = load_world_session(ws_path)
-    # players = world.get('snapshot', {}).get('players', [])
-    # if len(players)==0:
-    #     return
-    # dirs = [f for f in dirs if f[:-1] in players]
     users = []
-    for user in dirs:
-        us_path = os.path.join(session_dir, user, files[-1])
+    for user in user_dirs:
+        us_path = os.path.join(session_dir, user, snapshot)
         if not os.path.exists(us_path):
-            return
+            continue
         tmp = load_user_session(us_path)
         if tmp:
             users.append(tmp)
@@ -154,3 +162,35 @@ def summary_for_session(world, users):
         'days':clock['cycles'],
         'title': line
     }
+
+
+def check_all_status(session_dir):
+    files = []
+    dirs = []
+    for f in os.listdir(session_dir):
+        if os.path.isfile(os.path.join(session_dir, f)):
+            files.append(f)
+        else:
+            dirs.append(f)
+    files = [f for f in files if f.isdigit()]
+    files.sort()
+    for f in files:
+        print f
+        ws_path = os.path.join(session_dir, f)
+        world = load_world_session(ws_path)
+        users = []
+        for user in dirs:
+            us_path = os.path.join(session_dir, user, f)
+            if not os.path.exists(us_path):
+                print 'user {} save not exists for {}'.format(user, f)
+                continue
+            tmp = load_user_session(us_path)
+            if tmp:
+                users.append(tmp)
+        summary = summary_for_session(world, users)
+        print summary['title'], '\n'
+
+
+root = 'C:/Users/ld/Documents/Klei/DoNotStarveTogether/Cluster_1/Master/save/'
+load_saveindex(root, use_cache=False)
+

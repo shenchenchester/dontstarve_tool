@@ -7,8 +7,8 @@ import stat
 import save_reader as sr
 import json
 
-SAVE_DIR = '/Users/chester/Documents/Klei/DoNotStarveTogether'
-BACKUP_DIR = '/Users/chester/Documents/Klei/backups'
+SAVE_DIR = 'C:/Users/ld/Documents/Klei/DoNotStarveTogether/Cluster_1/Master/save'
+BACKUP_DIR = 'C:/Users/ld/Documents/Klei/helper/save'
 INTERVAL = 8*60 # seconds
 MAX_BACKUPS = 10
 
@@ -72,7 +72,7 @@ def loop():
     lasttime = time.time()
     while True:
         time.sleep(INTERVAL)
-        save_path = os.path.join(SAVE_DIR, 'client_save')
+        save_path = SAVE_DIR
         session = sr.load_saveindex(save_path, use_cache=False)
         if session and session['time'] - lasttime > 0:
             t = datetime.fromtimestamp(session['time'])
@@ -106,7 +106,7 @@ def menu():
         loop()
     elif n=='2':
         print(0, 'current')
-        save_path = os.path.join(SAVE_DIR, 'client_save')
+        save_path = SAVE_DIR
         session = sr.load_saveindex(save_path, use_cache=False)
         if session:
             print(' ', session['summary']['title'])
@@ -115,7 +115,7 @@ def menu():
         backups = get_backups()
         for i, d in enumerate(backups):
             print(i+1, d)
-            save_path = os.path.join(BACKUP_DIR, d, 'client_save')
+            save_path = os.path.join(BACKUP_DIR, d)
             session = sr.load_saveindex(save_path, use_cache=True)
             if session:
                 print(' ', session['summary']['title'])
